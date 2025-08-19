@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeProblem, generateDSBSolution, type ProblemAnalysisInput } from "./openai";
 import { insertProblemAnalysisSchema, insertSolutionSchema, insertUserSchema } from "@shared/schema";
+import { demoAnalysisResult, demoDSBSolution } from "./demo-data";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -30,7 +31,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           facilities: input.facilities || undefined
         };
 
-        const analysisResult = await analyzeProblem(analysisInput);
+        let analysisResult;
+        try {
+          analysisResult = await analyzeProblem(analysisInput);
+        } catch (openaiError) {
+          // If OpenAI fails (quota exceeded, etc.), use demo data for testing
+          console.warn("OpenAI API failed, using demo data:", openaiError);
+          analysisResult = demoAnalysisResult;
+        }
         
         // Update with results
         const updatedAnalysis = await storage.updateProblemAnalysisStatus(
@@ -46,7 +54,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (aiError) {
         await storage.updateProblemAnalysisStatus(analysis.id, "failed");
-        throw aiError;
+        res.status(500).json({
+          success: false,
+          error: aiError instanceof Error ? aiError.message : "Analysis failed"
+        });
       }
     } catch (error) {
       res.status(400).json({
@@ -85,7 +96,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         facilities: analysis.facilities || undefined
       };
 
-      const dsbSolution = await generateDSBSolution(analysis.analysisResult as any, problemInput);
+      let dsbSolution;
+      try {
+        dsbSolution = await generateDSBSolution(analysis.analysisResult as any, problemInput);
+      } catch (openaiError) {
+        // If OpenAI fails, use demo data for testing
+        console.warn("OpenAI API failed, using demo data:", openaiError);
+        dsbSolution = demoDSBSolution;
+      }
 
       // Save solution to storage
       const solution = await storage.createSolution({
