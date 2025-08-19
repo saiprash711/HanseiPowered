@@ -18,6 +18,7 @@ interface AnalysisResult {
 }
 
 export function ProblemInput() {
+  const [activeTab, setActiveTab] = useState("natural");
   const [naturalLanguageInput, setNaturalLanguageInput] = useState("");
   const [industry, setIndustry] = useState("");
   const [revenue, setRevenue] = useState("");
@@ -25,6 +26,8 @@ export function ProblemInput() {
   const [facilities, setFacilities] = useState("");
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const { toast } = useToast();
 
@@ -102,6 +105,48 @@ export function ProblemInput() {
     // Simulate progress updates
     setTimeout(() => setAnalysisProgress(50), 1000);
     setTimeout(() => setAnalysisProgress(75), 2000);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setUploadedFile(file);
+      toast({
+        title: "File Selected",
+        description: `${file.name} is ready for analysis.`,
+      });
+    }
+  };
+
+  const handleDocumentAnalyze = async () => {
+    if (!uploadedFile) return;
+    setIsUploading(true);
+    setAnalysisProgress(25);
+
+    const fileName = uploadedFile.name.toLowerCase();
+    let industryGuess = "General Manufacturing";
+    
+    if (fileName.includes('pharma')) industryGuess = "pharmaceutical";
+    else if (fileName.includes('electronic')) industryGuess = "electronics";
+    else if (fileName.includes('paint')) industryGuess = "paint";
+
+    analyzeProblemMutation.mutate({
+      problemDescription: `Document analysis for ${uploadedFile.name} - Manufacturing optimization requirements based on uploaded data`,
+      industry: industryGuess,
+      userId: null
+    });
+
+    setTimeout(() => setAnalysisProgress(50), 1000);
+    setTimeout(() => setAnalysisProgress(75), 2000);
+    setIsUploading(false);
   };
 
   return (
@@ -255,16 +300,30 @@ export function ProblemInput() {
                 </div>
 
                 <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center mb-4">
-                  <Upload className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <p className="text-neutral-600">Upload annual reports, production data, or financial statements</p>
-                  <p className="text-sm text-neutral-500 mt-2">PDF, Excel, CSV files supported</p>
+                  <input
+                    type="file"
+                    id="file-upload"
+                    accept=".pdf,.xlsx,.xls,.csv,.txt,.docx"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    data-testid="input-file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <Upload className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+                    <p className="text-neutral-600">
+                      {uploadedFile ? uploadedFile.name : "Upload annual reports, production data, or financial statements"}
+                    </p>
+                    <p className="text-sm text-neutral-500 mt-2">PDF, Excel, CSV, Word files supported</p>
+                  </label>
                 </div>
 
                 <Button 
                   className="w-full bg-accent text-white hover:bg-accent/90"
+                  onClick={handleDocumentAnalyze}
+                  disabled={!uploadedFile || isUploading}
                   data-testid="button-upload-analyze"
                 >
-                  Upload & Analyze
+                  {isUploading ? "Analyzing..." : "Upload & Analyze"}
                 </Button>
               </CardContent>
             </Card>
