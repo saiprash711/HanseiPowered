@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock, CheckCircle, Zap, TrendingUp, Shield } from "lucide-react";
+import { BarChart3, Clock, CheckCircle, Zap, TrendingUp, Shield, Sparkles, Target } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 export function SolutionShowcase() {
   const [activeTab, setActiveTab] = useState("pharma");
+  const { ref, isVisible } = useScrollAnimation();
 
   const solutionExamples = {
     pharma: {
@@ -45,9 +47,14 @@ export function SolutionShowcase() {
   ];
 
   return (
-    <section id="solutions" className="py-24 bg-neutral-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+    <section id="solutions" ref={ref} className="relative py-32 bg-gradient-to-br from-white via-slate-50 to-blue-50 overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-pattern-dots opacity-30"></div>
+      <div className="absolute top-20 left-20 w-80 h-80 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-accent/10 to-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`text-center mb-20 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
           <h2 className="text-4xl font-bold text-neutral-900 mb-4">
             AI-Generated Solutions & Dashboards
           </h2>
