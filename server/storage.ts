@@ -7,7 +7,7 @@ import {
   type InsertSolution,
   type Subscription,
   type InsertSubscription 
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 export interface IStorage {

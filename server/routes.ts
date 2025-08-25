@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeProblem, generateDSBSolution, type ProblemAnalysisInput } from "./openai";
-import { insertProblemAnalysisSchema, insertSolutionSchema, insertUserSchema } from "@shared/schema";
+import { insertProblemAnalysisSchema, insertSolutionSchema, insertUserSchema } from "../shared/schema.js";
 import { demoAnalysisResult, demoDSBSolution } from "./demo-data";
 import { z } from "zod";
 
