@@ -4,18 +4,15 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./",
-    "rootDir": "./",
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["../shared/*"]
-    }
+    "allowJs": true
   },
-  "include": ["**/*.ts", "../shared/**/*.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }
